@@ -13,8 +13,8 @@ return new class extends Migration
     {
         User::create([
             'name' => 'admin',
-            'email' => 'admin@example.com',
-            'password' => bcrypt('jygUuxtISyDzX5f')
+            'email' => 'admin@mail.com',
+            'password' => Hash::make('jygUuxtISyDzX5f')
         ]);
     }
 

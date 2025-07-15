@@ -17,9 +17,9 @@ class Login extends LoginFormRequest
             table: "users",
             submit_text: "Entrar",
             //submit_url: "/login",
-            redirect: "/poducts",
+            redirect: "/products",
             formFields: [
-                "email" => new FormField(
+                "name" => new FormField(
                     placeholder:"Usuario", 
                     type: InputType::TEXT,
                     icon: "bx bx-user"
