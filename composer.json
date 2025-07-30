@@ -75,10 +75,6 @@
     "prefer-stable": true,
     "repositories": [
         {
-            "type": "path",
-            "url": "../shared-utils"
-        },
-        {
             "type": "vcs",
             "url": "git@github.com:ro749/shared-utils.git"
         }
