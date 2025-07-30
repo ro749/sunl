@@ -12,14 +12,14 @@ class InventoryController extends Controller
 {
     public function index(Request $request)
     {
-        $title = DB::table('subproducts')->where('id', $request->query('subproduct'))->first()->name;
+        $subproduct = DB::table('subproducts')->where('id', $request->query('subproduct'))->first();
         $table = new InventaryTable();
         $form = ColorRegister::instanciate();
         return view('inventory/products', [
             'table' => $table,
-            'title' => $title,
+            'title' => $subproduct->name,
             'form' => $form,
-            'back'=> '/subproducts']
+            'back'=> '/subproducts?product='.$subproduct->product,]
         );
     }
 }

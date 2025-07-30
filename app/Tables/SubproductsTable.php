@@ -9,8 +9,11 @@ use Ro749\SharedUtils\Statistics\StatisticType;
 use Ro749\SharedUtils\Tables\Column;
 use Ro749\SharedUtils\Tables\Delete;
 use Ro749\SharedUtils\Tables\View;
-use Ro749\SharedUtils\Filters\BasicFilter;
+use Ro749\SharedUtils\Filters\CategoryFilter;
+use Ro749\SharedUtils\FormRequests\Selector;
+use Ro749\SharedUtils\Filters\BackendFilters\BasicFilter;
 use \Illuminate\Database\Query\Builder; 
+use App\Http\Requests\SubproductInventoryForm;
 class SubproductsTable extends StatisticTable
 {
     public function __construct()
@@ -24,7 +27,7 @@ class SubproductsTable extends StatisticTable
                 data_column: 'subproduct',
                 value_column: 'value',
                 type: StatisticType::TOTAL,
-                category_column_desc: new Column(display:"Productos",editable:true),
+                category_column_desc: new Column(display:"Productos"),
                 data_column_desc: new Column(display:"Cantidad"),
                 backend_filters: [
                     'product' => new BasicFilter(
@@ -34,7 +37,21 @@ class SubproductsTable extends StatisticTable
                         }
                     ),
                 ],
+                filters:[
+                    'location' => new CategoryFilter(
+                        id: 'location',
+                        display: 'Ubicación',
+                        column: 'location',
+                        session: 'location',
+                        selector: Selector::fromDB(
+                            id: 'location',
+                            table: 'locations',
+                            label_column: 'name',
+                        )
+                    ),
+                ]
             ),
+            form: SubproductInventoryForm::instanciate(),
             view: new View('/inventory','id','subproduct'),
             delete: new Delete(
                 warning: 'seguro que quieres eliminar {name}?'

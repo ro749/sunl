@@ -5,12 +5,15 @@ namespace App\Tables;
 use Ro749\SharedUtils\Tables\BaseTableDefinition;
 use Ro749\SharedUtils\Getters\ArrayGetter;
 use Ro749\SharedUtils\Tables\Column;
-use Ro749\SharedUtils\Tables\ColumnModifier;
+use Ro749\SharedUtils\Models\LogicModifiers\ForeignKey;
+use Ro749\SharedUtils\Models\Modifier;
 use Ro749\SharedUtils\Tables\Delete;
 use Ro749\SharedUtils\Tables\View;
-use Ro749\SharedUtils\Filters\Filters;
-use Ro749\SharedUtils\Filters\BasicFilter;
+use Ro749\SharedUtils\Filters\CategoryFilter;
+use Ro749\SharedUtils\Filters\BackendFilters\BasicFilter;
+use Ro749\SharedUtils\FormRequests\Selector;
 use \Illuminate\Database\Query\Builder; 
+use App\Http\Requests\InventoryForm;
 class InventaryTable extends BaseTableDefinition
 {
     public function __construct()
@@ -22,13 +25,14 @@ class InventaryTable extends BaseTableDefinition
                 columns: [
                     'color' => new Column(
                         display: 'Color',
-                        table:'colors',
-                        column: 'color',
+                        logic_modifier: new ForeignKey(
+                            table: 'colors',
+                            column: 'color',
+                        )
                     ),
                     'value' => new Column(
                         display: 'Cantidad',
-                        editable:true,
-                        modifier: ColumnModifier::NUMBER
+                        modifier:Modifier::NUMBER
                     ),
                 ],
                 backend_filters: [
@@ -39,7 +43,21 @@ class InventaryTable extends BaseTableDefinition
                         }
                     ),
                 ],
+                filters:[
+                    'location' => new CategoryFilter(
+                        id: 'location',
+                        display: 'Ubicación',
+                        column: 'location',
+                        session: 'location',
+                        selector: Selector::fromDB(
+                            id: 'location',
+                            table: 'locations',
+                            label_column: 'name',
+                        )
+                    ),
+                ]
             ),
+            form: InventoryForm::instanciate(),
             delete: new Delete(
                 warning: 'seguro que quieres eliminar {color}?'
             )

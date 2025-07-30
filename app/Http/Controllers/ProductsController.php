@@ -16,7 +16,7 @@ class ProductsController extends Controller
             getter: $table->getter
         );
         return view('inventory/products', [
-            'title' => 'Products',
+            'title' => 'Productos',
             'table' => $table,
             'form' => $form,
             'statistic' => $statistic

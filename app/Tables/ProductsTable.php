@@ -5,9 +5,12 @@ namespace App\Tables;
 use Ro749\SharedUtils\Tables\StatisticTable;
 use Ro749\SharedUtils\Tables\Column;
 use Ro749\SharedUtils\Getters\StatisticsGetter;
+use Ro749\SharedUtils\Filters\CategoryFilter;
+use Ro749\SharedUtils\FormRequests\Selector;
 use Ro749\SharedUtils\Statistics\StatisticType;
 use Ro749\SharedUtils\Tables\Delete;
 use Ro749\SharedUtils\Tables\View;
+use App\Http\Requests\ProductInventoryForm;
 class ProductsTable extends StatisticTable
 {
     public function __construct()
@@ -22,9 +25,25 @@ class ProductsTable extends StatisticTable
                 value_column: 'value',
                 joins: [["table"=>"subproducts","column"=>"product"]],
                 type: StatisticType::TOTAL,
-                category_column_desc: new Column(display:"Productos",editable:true),
+                category_column_desc: new Column(display:"Productos"),
                 data_column_desc: new Column(display:"Cantidad"),
+                filters:[
+                    'location' => new CategoryFilter(
+                        id: 'location',
+                        display: 'Ubicación',
+                        column: 'location',
+                        session: 'location',
+                        selector: Selector::fromDB(
+                            id: 'location',
+                            table: 'locations',
+                            label_column: 'name',
+                        )
+                    ),
+                    
+                ],
+                debug:true
             ),
+            form: ProductInventoryForm::instanciate(),
             view: new View('/subproducts','id','product'),
             delete: new Delete(
                 warning: 'seguro que quieres eliminar {name}?'
