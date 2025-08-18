@@ -6,6 +6,7 @@ use App\Http\Controllers\LoginController;
 use App\Http\Controllers\ProductsController;
 use App\Http\Controllers\SubproductsController;
 use App\Http\Controllers\InventoryController;
+use App\Http\Controllers\SalepointController;
 
 Route::get('/', [LoginController::class, 'index'])->name('login');
 Route::get('/logout', function (Request $request) {
@@ -18,8 +19,9 @@ Route::get('/logout', function (Request $request) {
     return redirect('/');
 })->name('logout');
 Route::middleware(['auth'])->group(function () {
-    Route::get('/products', [ProductsController::class, 'index']);
-    Route::get('/subproducts', [SubproductsController::class, 'index']);
-    Route::get('/inventory', [InventoryController::class, 'index']);
+    Route::get('/products', [InventoryController::class, 'products'])->name('inventory');
+    Route::get('/subproducts', [InventoryController::class, 'subproducts']);
+    Route::get('/inventory', [InventoryController::class, 'inventory']);
+    Route::get('/venta', [SalepointController::class, 'index'])->name('venta');
     // Todas estas rutas requieren estar logueado
 });

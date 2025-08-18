@@ -32,8 +32,8 @@ class SubproductsTable extends StatisticTable
                 backend_filters: [
                     'product' => new BasicFilter(
                         id: 'product',
-                        filter: function(Builder $query,string $data) {
-                            $query->where('product', $data);
+                        filter: function(Builder $query,array $data) {
+                            $query->where('product', $data['product']);
                         }
                     ),
                 ],

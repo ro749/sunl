@@ -38,8 +38,8 @@ class InventaryTable extends BaseTableDefinition
                 backend_filters: [
                     'subproduct' => new BasicFilter(
                         id: 'subproduct',
-                        filter: function(Builder $query,string $data) {
-                            $query->where('subproduct', $data);
+                        filter: function(Builder $query,array $data) {
+                            $query->where('subproduct', $data["subproduct"]);
                         }
                     ),
                 ],
