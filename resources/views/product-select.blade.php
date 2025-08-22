@@ -16,18 +16,24 @@
         <button class="btn btn-primary" onclick="open_select_product();">
             Añadir Producto
         </button>
+        @include('shared-utils::components.tables.localSmartTable', ['table' => $preview_table])
+        <button class="btn btn-success" id="save-PreviewSale">Gonfirmar Compra</button>
         <x-sharedutils::modal innerStyle="width: 90%; height: 90%;" id="select-product-popup" onclose="closePopup('select-product-popup');">
-            @include('shared-utils::components.tables.layeredSmartTable', ['table' => $table])
+            @include('shared-utils::components.tables.layeredSmartTable', ['table' => $select_table])
         </x-sharedutils::modal>
     </div>
     @push('scripts')
     <script>
         function open_select_product() {
             openPopup('select-product-popup');
-            $('#{{ $table->id }}').refreshLayeredSmartTable();
+            $('#{{ $select_table->id }}').refreshLayeredSmartTable();
         }
         $(document).on('selected-ProductSelect', function(e, data) {
-            
+            closePopup('select-product-popup');
+            $('#{{ $preview_table->id }}').addElementToTable({
+                'id': data.labels[2].id,
+                'name': data.labels[1].name+' '+data.labels[2].color
+            });
         });
     </script>
     @endpush
