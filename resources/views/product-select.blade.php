@@ -31,7 +31,7 @@
         $(document).on('selected-ProductSelect', function(e, data) {
             closePopup('select-product-popup');
             $('#{{ $preview_table->id }}').addElementToTable({
-                'id': data.labels[2].id,
+                'product': data.labels[2].id,
                 'name': data.labels[1].name+' '+data.labels[2].color
             });
         });

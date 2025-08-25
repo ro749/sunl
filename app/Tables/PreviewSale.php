@@ -19,23 +19,35 @@ class PreviewSale extends LocalTable
                 columns : [
                     'name' => new Column(
                         display: 'Producto',
-                    )
+                    ),
+                    'price' => new Column(
+                        display: 'Precio por unidad',
+                    ),
+                    'quantity' => new Column(
+                        display: 'Cantidad',
+                    ),
                 ],
                 filters: [],
                 backend_filters: []
             ),
             
-            #form: new BaseFormRequest(
-            #    id: "NewProducts",
-            #    table: "sold_products",
-            #    formFields: [
-            #        'id' => new FormField(
-            #            type: InputType::TEXT,
-            #            rules: ['required', 'integer', 'exists:sold_products,id'],
-            #        ),
-            #    ],
-            #),
+            form: new BaseFormRequest(
+                id: "NewProducts",
+                table: "sold_products",
+                formFields: [
+                    'product' => new FormField(
+                        type: InputType::HIDDEN,
+                    ),
+                    'price' => new FormField(
+                        type: InputType::NUMBER,
+                    ),
+                    'quantity' => new FormField(
+                        type: InputType::QUANTITY,
+                    ),
+                ],
+            ),
         );
+        
     }
 
     protected static ?LocalTable $instance = null;

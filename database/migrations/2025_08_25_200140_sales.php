@@ -14,6 +14,8 @@ return new class extends Migration
         Schema::create('sold_products', function (Blueprint $table) {
             $table->id();
             $table->string('product');
+            $table->decimal('price', 12, 2);
+            $table->integer('quantity');
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
         });
@@ -27,3 +29,4 @@ return new class extends Migration
         //
     }
 };
+
