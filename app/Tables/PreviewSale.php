@@ -26,6 +26,10 @@ class PreviewSale extends LocalTable
                     'quantity' => new Column(
                         display: 'Cantidad',
                     ),
+                    'total' => new Column(
+                        display: 'Total',
+                        fillable: true
+                    ),
                 ],
                 filters: [],
                 backend_filters: []
@@ -47,7 +51,6 @@ class PreviewSale extends LocalTable
                 ],
             ),
         );
-        
     }
 
     protected static ?LocalTable $instance = null;

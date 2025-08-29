@@ -46,7 +46,7 @@ class ProductSelect extends LayeredTable
                         table: 'inventory',
                         columns: [
                             'color' => new Column(
-                                display: 'Producto',
+                                display: 'Color',
                                 logic_modifier: new ForeignKey(
                                     table: 'colors',
                                     column: 'color',

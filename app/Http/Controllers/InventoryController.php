@@ -35,11 +35,11 @@ class InventoryController extends Controller
         $title = DB::table('products')->where('id', $request->query('product'))->first()->name;
         $table = new SubproductsTable();
         $form = SubproductRegister::instanciate();
-        $statistic = new BaseStatistic(
-            id: 'SubproductsStatistics',
-            getter: $table->getter,
-            filters: ["product" => $request->query('product')]
-        );
+        //$statistic = new BaseStatistic(
+        //    id: 'SubproductsStatistics',
+        //    getter: $table->getter,
+        //    filters: ["product" => $request->query('product')]
+        //);
         return view('inventory/products', [
             'title' =>  $title,
             'table' => $table,
