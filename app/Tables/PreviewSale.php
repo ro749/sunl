@@ -14,6 +14,9 @@ class PreviewSale extends LocalTable
     public function __construct(){
         parent::__construct(
             id: 'PreviewSale',
+            parent_table: 'sales',
+            parent_column: 'sale',
+            owner: 'user',
             getter: new ArrayGetter(
                 table: 'sold_products',
                 columns : [
