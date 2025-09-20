@@ -7,6 +7,24 @@
         .filter-on{
             background-color: gray;
         }
+        p{
+            margin: 0;
+        }
+        #PaymentForm{
+            display: flex;
+            flex-direction: row;
+            gap: 1em;
+        }
+        #pay-area{
+            display: flex; 
+            flex-direction: row; 
+            justify-content: space-between; 
+            align-items: end; 
+            gap: 2em; 
+            background-color: white; 
+            border-radius: 1em; 
+            padding: .5em;
+        }
     </style>
 </head>
 
@@ -16,14 +34,16 @@
         <button class="btn btn-primary" onclick="open_select_product();">
             Añadir Producto
         </button>
-        @include('shared-utils::components.tables.localSmartTable', ['table' => $preview_table])
-        <div style="display: flex; flex-direction: row; justify-content: end;">
-            <p>Total: $<span id="total">0</span></p>
-        </div>
-        <button class="btn btn-success" id="save-PreviewSale">Gonfirmar Compra</button>
         <x-sharedutils::modal innerStyle="width: 90%; height: 90%;" id="select-product-popup" onclose="closePopup('select-product-popup');">
             @include('shared-utils::components.tables.layeredSmartTable', ['table' => $select_table])
         </x-sharedutils::modal>
+        @include('shared-utils::components.tables.localSmartTable', ['table' => $preview_table])
+        <div id="pay-area">
+            @include('shared-utils::components.ajax-form', ['form' => $payment_form])
+            <p>Total: $<span id="total">0</span></p>
+        </div>
+        <button class="btn btn-success" id="save-PreviewSale" >Confirmar Compra</button>
+        
     </div>
     @push('scripts')
     <script>
@@ -64,6 +84,27 @@
         
         $('#{{ $preview_table->id }}').on('click', '.delete-btn', function(event) {
             calc_total();
+        });
+
+        $('#method').on('change', function(event) {
+            switch (event.target.value) {
+                case '0':
+                    $('#form-field-reference').hide();
+                    $('#form-field-bank').hide();
+                    break;
+                case '1':
+                    $('#form-field-reference').show();
+                    $('#form-field-bank').hide();
+                    break;
+                case '2':
+                    $('#form-field-reference').show();
+                    $('#form-field-bank').show();
+                    break;
+            }
+        });
+
+        $('#save-PreviewSale').on('click', function(event) {
+            Alpine.$data($('#PaymentForm')[0]).submit();
         });
     </script>
     @endpush

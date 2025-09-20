@@ -14,7 +14,6 @@ class UsersTable extends BaseTableDefinition
     public function __construct(){
         $User = new User();
         $User->get_table($this);
-        $this->id = 'UsersTable';
         
     }
 

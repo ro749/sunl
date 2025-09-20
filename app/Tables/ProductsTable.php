@@ -10,13 +10,12 @@ use Ro749\SharedUtils\FormRequests\Selector;
 use Ro749\SharedUtils\Statistics\StatisticType;
 use Ro749\SharedUtils\Tables\Delete;
 use Ro749\SharedUtils\Tables\View;
-use App\Http\Requests\ProductInventoryForm;
+use App\Forms\ProductInventoryForm;
 class ProductsTable extends StatisticTable
 {
     public function __construct()
     {
         parent::__construct(
-            id: 'ProductsTable', 
             getter: new StatisticsGetter(
                 category_table: 'products',
                 category_column: 'name',

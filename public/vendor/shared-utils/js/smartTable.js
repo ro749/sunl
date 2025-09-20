@@ -1,8 +1,8 @@
 (function ($) {
     $.fn.smartTable = function (options = {}) {
         function cancer_edit(){
-            $('.editbuttons').css('display', 'none');
-            $('.normalbuttons').css('display', 'flex');
+            $('.edit-buttons').css('display', 'none');
+            $('.normal-buttons').css('display', 'flex');
             $('.edit-cancel-recover').each(function(){
                 $(this).parent().html($(this).html());
             });
@@ -18,25 +18,52 @@
             const columns = [];
             for (let col in options.columns){
                 let column = { data: col };
-                if(options.columns[col].logic_modifier) {
-                    switch (options.columns[col].logic_modifier.type) {
+                let col_data = options.columns[col];
+                let renderFn = null;
+                if(col_data.logic_modifier) {
+                    switch (col_data.logic_modifier.type) {
                         case 'options':
-                            column.render = (data) => window[options.columns[col].logic_modifier.options][data];
+                            renderFn = (data) => {
+                                return '<div class="'+col_data.logic_modifier.options+'-'+data+'">'+
+                                window[col_data.logic_modifier.options][data]+
+                                '</div>';
+                            }
                             break;
                     }
                 }
-                switch (options.columns[col].modifier) {
+                switch (col_data.modifier) {
                     case 'money':
-                        column.render = (data) => `$${Number(data).toLocaleString('es-MX')}`;
+                        column.render = (data) => {
+                            let value = renderFn ? renderFn(data) : data;
+                            return `$${Number(value).toLocaleString('es-MX')}`;
+                        }
+                        break;
+                    case 'meters':
+                        column.render = (data) => {
+                            let value = renderFn ? renderFn(data) : data;
+                            return `${value} m²`;
+                        }
                         break;
                     case 'percent':
-                        column.render = (data) => `${data}%`;
+                        column.render = (data) => {
+                            let value = renderFn ? renderFn(data) : data;
+                            return `${value}%`;
+                        }
                         break;
                     case 'date':
-                        column.render = (data) => new Date(data).toLocaleDateString();
+                        column.render = (data) => {
+                            let value = renderFn ? renderFn(data) : data;
+                            return new Date(value).toLocaleDateString();
+                        }
                         break;
+                    case '':
+                    case null:
+                    case 'encapsulate':
+                        column.render = (data) => renderFn ? renderFn(data) : data;
+                        break;
+                    
                 }
-                if(options.columns[col].table && options.columns[col].column && options.columns[col].editable){
+                if(col_data.table && options.columns[col].column && options.columns[col].editable){
                     column.render = (data) => data==0?"":selectors[col][data];
                 }
                 columns.push(column);
@@ -46,25 +73,27 @@
                     data: null,
                     render: function (data, type, row, meta) {
                         let buttons = '';
-
-                        if (options.view) {
-                            buttons += '<button type="button" class="btn view-btn"><i class="bx bx-show"></i></button>';
+                        for(var button in options.buttons){
+                            buttons += `
+                                <button type="button" class="btn `+options.buttons[button].button_class+` w-32-px h-32-px `+options.buttons[button].background_color_class+' '+options.buttons[button].text_color_class+` rounded-circle d-inline-flex align-items-center justify-content-center">
+                                    <iconify-icon icon="`+options.buttons[button].icon+`"> 
+                                    </iconify-icon>
+                                </button>
+                            `;
                         }
-
+                        buttons = '<div class="normal-buttons" style="display:flex">'+buttons+'</div>';
                         if (options.is_editable) {
-                            buttons += '<button type="button" class="btn edit-btn"><i class="bx bx-edit-alt"></i></button>';
-                        }
-
-                        if (options.delete) {
-                            buttons += '<button type="button" class="btn delete-btn"><i class="bx bx-trash"></i></button>';
-                        }
-
-                        if (options.is_editable) {
-                            buttons = `
-                                <div class="normalbuttons" style="display:flex">`+buttons+`</div>
-                                <div class="editbuttons" style="display:none">
-                                    <button type="button" class="btn save-btn"><i class="bx bx-save"></i></button>
-                                    <button type="button" class="btn cancel-btn"><i class="bx bx-x-circle"></i></button>
+                            buttons += `
+                                <div class="edit-buttons" style="display:none">
+                                    <button type="button" class="btn save-btn w-32-px h-32-px bg-success-focus text-success-main rounded-circle d-inline-flex align-items-center justify-content-center">
+                                        <iconify-icon icon="iconamoon:check-circle-1">
+                                        </iconify-icon>
+                                    </button>
+                                    <div style="width:6px"></div>
+                                    <button type="button" class="btn cancel-btn w-32-px h-32-px bg-danger-focus text-danger-main rounded-circle d-inline-flex align-items-center justify-content-center">
+                                        <iconify-icon icon="iconamoon:close-circle-1">
+                                        </iconify-icon>
+                                    </button>
                                 </div>
                             `;
                         }
@@ -73,7 +102,7 @@
                     }
                 });
             }
-            var filters = {};
+            var filters = options.manual_filters??{};
             var params = new URLSearchParams(window.location.search);
             params.forEach((value, key) => {
                 filters[key] = value;
@@ -84,23 +113,27 @@
                     filters["cf-"+key] = sessionValue;
                 } 
             }
-            $.ajax({
-                url: '/table/'+options.id+'/selectors',
-                type: 'GET',
-                success: function(response) {
-                    selectors = response;
-                }
-            })
+            if(options.needs_selectors){
+                $.ajax({
+                    url: '/table/'+options.id+'/selectors',
+                    type: 'GET',
+                    success: function(response) {
+                        selectors = response;
+                    }
+                });
+            }
             var table = $table.DataTable({
                 ajax: {
-                    url: '/table/'+options.id+'/get',
+                    url: '/table/'+options.id+'/get'+(options.layer!=null?'/'+options.layer:''),
                     type: 'GET',
                     data: function (d) {
                         d.filters = filters; 
-                    }
+                    },
+                    
                 },
                 columns: columns,
                 serverSide: true,
+                order: options.order?[options.order]:[[0, 'asc']],
                 initComplete: function () {
                     for (const [key, filter] of Object.entries(options.filters)) {
                         const selector = document.createElement('div');
@@ -180,14 +213,17 @@
                     
                 }
             });
-            
-            
-            
-            if(options.view){
-                $table.on('click', '.view-btn', function(event) {
-                    window.location.href = options.view.url+'?'+options.view.name+'='+table.row($(this).parents('tr')).data()[options.view.param];
-                    
-                });
+            for(var button_num in options.buttons){
+                let button = options.buttons[button_num];
+                if(button.view != null){
+                    $table.on('click', '.'+button.button_class, function(event) {
+                        window.location.href = 
+                        button.view.url+'?'+
+                        button.view.name+'='+
+                        table.row($(this).parents('tr')).data()[button.view.param];
+                    });
+                }
+                
             }
             
             if(options.delete){
@@ -246,11 +282,18 @@
                     var colnum = 0;
                     var has_date = false;
                     var has_selector = false;
+                    for(var key in options.form.fields){
+                        var field = options.form.fields[key];
+                        var col = options.columns[key];
+                        
+                    }
                     for(var key in options.columns){
                         var col = options.columns[key];
                         if(col.editable){
                             var cell = row.node().getElementsByTagName('td')[colnum];
+                            
                             var hidden = "<span style='display:none' class='edit-cancel-recover'>"+cell.innerHTML+"</span>";
+                            
                             if(col.logic_modifier != null){
                                 switch(col.logic_modifier.type){
                                     case 'foreign_key':
@@ -272,8 +315,8 @@
                                         break;
                                 }
                             }
-                            else if(col.modifier != null){
-                                switch(col.modifier){
+                            else if(field.modifier != null){
+                                switch(field.modifier){
                                     case 'date':
                                         cell.innerHTML = hidden+'<input x-model="form.'+key+'" id="'+key+'" type="date" class="form-control date-editor" >';
                                         has_date = true;

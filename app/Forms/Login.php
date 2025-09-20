@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Requests;
+namespace App\Forms;
 
 use Ro749\SharedUtils\FormRequests\LoginFormRequest;
 use Ro749\SharedUtils\FormRequests\FormField;
@@ -13,12 +13,11 @@ class Login extends LoginFormRequest
     public function __construct()
     {
         parent::__construct(
-            id: "Login",
             table: "users",
             submit_text: "Entrar",
             //submit_url: "/login",
             redirect: "/products",
-            formFields: [
+            fields: [
                 "name" => new FormField(
                     placeholder:"Usuario", 
                     type: InputType::TEXT,

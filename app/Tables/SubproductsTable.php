@@ -13,7 +13,7 @@ use Ro749\SharedUtils\Filters\CategoryFilter;
 use Ro749\SharedUtils\FormRequests\Selector;
 use Ro749\SharedUtils\Filters\BackendFilters\BasicFilter;
 use \Illuminate\Database\Query\Builder; 
-use App\Http\Requests\SubproductInventoryForm;
+use App\Forms\SubproductInventoryForm;
 class SubproductsTable extends StatisticTable
 {
     public function __construct()

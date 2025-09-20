@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
-use App\Http\Requests\RegisterUser;
+use App\Forms\RegisterUser;
 use App\Tables\UsersTable;
 class UserController extends Controller
 {

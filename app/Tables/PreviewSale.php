@@ -9,12 +9,13 @@ use Ro749\SharedUtils\Tables\Delete;
 use Ro749\SharedUtils\FormRequests\BaseFormRequest;
 use Ro749\SharedUtils\FormRequests\FormField;
 use Ro749\SharedUtils\FormRequests\InputType;
+use App\Forms\PaymentForm;
 class PreviewSale extends LocalTable
 {
     public function __construct(){
         parent::__construct(
             id: 'PreviewSale',
-            parent_table: 'sales',
+            parent_form: new PaymentForm(),
             parent_column: 'sale',
             owner: 'user',
             getter: new ArrayGetter(
@@ -39,9 +40,8 @@ class PreviewSale extends LocalTable
             ),
             
             form: new BaseFormRequest(
-                id: "NewProducts",
                 table: "sold_products",
-                formFields: [
+                fields: [
                     'product' => new FormField(
                         type: InputType::HIDDEN,
                     ),

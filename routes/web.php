@@ -26,5 +26,5 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/venta', [SalepointController::class, 'index'])->name('venta');
     Route::get('/register-user', [UserController::class, 'form'])->name('register-user');
     Route::get('/users', [UserController::class, 'table'])->name('users');
-    // Todas estas rutas requieren estar logueado
+    
 });

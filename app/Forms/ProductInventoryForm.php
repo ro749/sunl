@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Requests;
+namespace App\Forms;
 
 use Ro749\SharedUtils\FormRequests\BaseFormRequest;
 use Ro749\SharedUtils\FormRequests\FormField;
@@ -13,10 +13,9 @@ class ProductInventoryForm extends BaseFormRequest
     public function __construct()
     {
         parent::__construct(
-            id: "ProductInventoryForm",
             table: "products",
             submit_text: "",
-            formFields: [
+            fields: [
                 'name'=> new FormField(
                     type: InputType::TEXT,
                 )

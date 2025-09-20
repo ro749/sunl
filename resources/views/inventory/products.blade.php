@@ -32,7 +32,7 @@
         </div>
         <div style="max-width:33.33%">
         @if(!empty($form))
-        @include('shared-utils::components.ajax-form', ['form' => $form, 'style' => 'display: flex; flex-direction: row; gap:6px; margin-top :36px; margin-bottom:36px;'])
+        <x-smartForm :form="$form" style="display: flex; flex-direction: row; gap:6px; margin-top :36px; margin-bottom:36px;" />
         @endif    
     </div>
         @include('shared-utils::components.tables.smartTable', ['table' => $table])

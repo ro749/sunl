@@ -5,11 +5,11 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Tables\InventaryTable;
-use App\Http\Requests\ColorRegister;
+use App\Forms\ColorRegister;
 use App\Tables\ProductsTable;
-use App\Http\Requests\ProductRegister;
+use App\Forms\ProductRegister;
 use App\Tables\SubproductsTable;
-use App\Http\Requests\SubproductRegister;
+use App\Forms\SubproductRegister;
 use Ro749\SharedUtils\Statistics\BaseStatistic;
 
 class InventoryController extends Controller
@@ -18,15 +18,14 @@ class InventoryController extends Controller
     {
         $table = ProductsTable::instance();
         $form = ProductRegister::instanciate();
-        $statistic = new BaseStatistic(
-            id: 'ProductsStatistics',
-            getter: $table->getter
-        );
+        //$statistic = new BaseStatistic(
+        //    getter: $table->getter
+        //);
         return view('inventory/products', [
             'title' => 'Productos',
             'table' => $table,
             'form' => $form,
-            'statistic' => $statistic
+            //'statistic' => $statistic
         ]);
     }
 
@@ -36,7 +35,6 @@ class InventoryController extends Controller
         $table = new SubproductsTable();
         $form = SubproductRegister::instanciate();
         //$statistic = new BaseStatistic(
-        //    id: 'SubproductsStatistics',
         //    getter: $table->getter,
         //    filters: ["product" => $request->query('product')]
         //);
@@ -44,7 +42,7 @@ class InventoryController extends Controller
             'title' =>  $title,
             'table' => $table,
             'form' => $form,
-            'statistic' => $statistic,
+            //'statistic' => $statistic,
             'back'=> '/products',
         ]);
     }

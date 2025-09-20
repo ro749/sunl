@@ -13,13 +13,12 @@ use Ro749\SharedUtils\Filters\CategoryFilter;
 use Ro749\SharedUtils\Filters\BackendFilters\BasicFilter;
 use Ro749\SharedUtils\FormRequests\Selector;
 use \Illuminate\Database\Query\Builder; 
-use App\Http\Requests\InventoryForm;
+use App\Forms\InventoryForm;
 class InventaryTable extends BaseTableDefinition
 {
     public function __construct()
     {
         parent::__construct(
-            id: 'InventaryTable', 
             getter: new ArrayGetter(
                 table: 'inventory',
                 columns: [
