@@ -2,45 +2,65 @@
 
 namespace App\Tables;
 
-use Ro749\SharedUtils\Tables\StatisticTable;
+use Ro749\SharedUtils\Tables\BaseTableDefinition;
 use Ro749\SharedUtils\Tables\Column;
-use Ro749\SharedUtils\Getters\StatisticsGetter;
-use Ro749\SharedUtils\Filters\CategoryFilter;
-use Ro749\SharedUtils\FormRequests\Selector;
-use Ro749\SharedUtils\Statistics\StatisticType;
+use Ro749\SharedUtils\Getters\ArrayGetter;
 use Ro749\SharedUtils\Tables\Delete;
 use Ro749\SharedUtils\Tables\View;
 use App\Forms\ProductInventoryForm;
-class ProductsTable extends StatisticTable
+use Ro749\SharedUtils\Models\LogicModifiers\ForeignKey;
+use Ro749\SharedUtils\Statistics\Statistic;
+use Ro749\SharedUtils\Statistics\StatisticColumn;
+use Ro749\SharedUtils\Statistics\StatisticType;
+use Ro749\SharedUtils\Statistics\StatisticLink;
+use Ro749\SharedUtils\Filters\CategoryFilter;
+use Ro749\SharedUtils\FormRequests\Selector;
+class ProductsTable extends BaseTableDefinition
 {
     public function __construct()
     {
         parent::__construct(
-            getter: new StatisticsGetter(
-                category_table: 'products',
-                category_column: 'name',
-                data_table: 'inventory',
-                data_column: 'subproduct',
-                value_column: 'value',
-                joins: [["table"=>"subproducts","column"=>"product"]],
-                type: StatisticType::TOTAL,
-                category_column_desc: new Column(display:"Productos"),
-                data_column_desc: new Column(display:"Cantidad"),
-                filters:[
-                    'location' => new CategoryFilter(
-                        id: 'location',
-                        display: 'Ubicación',
-                        column: 'location',
-                        session: 'location',
-                        selector: Selector::fromDB(
-                            id: 'location',
-                            table: 'locations',
-                            label_column: 'name',
-                        )
-                    ),
-                    
+            getter: new ArrayGetter(
+                table: 'products',
+                statistics:[
+                    'stat'=> new Statistic(
+                        table: 'inventory',
+                        group_column: 'subproduct',
+                        link: new StatisticLink(
+                            table: 'subproducts',
+                            column: 'product',
+                        ),
+                        columns: [
+                            'value'=> new StatisticColumn(
+                                type: StatisticType::SUM
+                            )
+                        ],
+
+                        filters:[
+                            'location' => new CategoryFilter(
+                                id: 'location',
+                                display: 'Ubicación',
+                                column: 'location',
+                                session: 'location',
+                                selector: Selector::fromDB(
+                                    id: 'location',
+                                    table: 'locations',
+                                    label_column: 'name',
+                                )
+                            ),
+                        ]
+                    )
                 ],
-                debug:true
+                columns: [
+                    'name'=> new Column(display:"Producto"),
+                    'value'=>new Column(
+                        display: 'Cantidad',
+                        logic_modifier: new ForeignKey(
+                            table: 'stat',
+                            column: 'value'
+                        )
+                    )
+                ],
             ),
             form: ProductInventoryForm::instanciate(),
             view: new View('/subproducts','id','product'),

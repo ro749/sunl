@@ -29,6 +29,11 @@
                                 '</div>';
                             }
                             break;
+                        case 'foreign_key':
+                            if(options?.form && options.form.fields && options.form.fields[col]) {
+                                renderFn = (data) => data==0||data==null?"":selectors[col][data];
+                            }
+                            break;
                     }
                 }
                 switch (col_data.modifier) {
@@ -53,19 +58,21 @@
                     case 'date':
                         column.render = (data) => {
                             let value = renderFn ? renderFn(data) : data;
-                            return new Date(value).toLocaleDateString();
+                            const [y, m, d] = value.split("-");
+                            return `${m}/${d}/${y}`;
                         }
                         break;
                     case '':
                     case null:
-                    case 'encapsulate':
-                        column.render = (data) => renderFn ? renderFn(data) : data;
+                        column.render = (data) => {
+                            return renderFn ? renderFn(data) : data;
+                        }
                         break;
                     
                 }
-                if(col_data.table && options.columns[col].column && options.columns[col].editable){
-                    column.render = (data) => data==0?"":selectors[col][data];
-                }
+                //if(col_data.table && options.columns[col].column && options.columns[col].editable){
+                //    column.render = (data) => data==0?"":selectors[col][data];
+                //}
                 columns.push(column);
             }
             if (options.needs_buttons) {
@@ -133,59 +140,90 @@
                 },
                 columns: columns,
                 serverSide: true,
-                order: options.order?[options.order]:[[0, 'asc']],
+                order: options.order?[options.order]:[],
+                pageLength: options.page_length??10,
+                language: options.texts,
                 initComplete: function () {
                     for (const [key, filter] of Object.entries(options.filters)) {
-                        const selector = document.createElement('div');
-                        selector.classList.add('filter');
-                        selector.style.display = 'flex';
-                        selector.style.flexDirection = 'row';
-                        selector.style.justifyContent = 'flex-end';
-                        selector.style.gap = '8px';
-                        selector.style.marginLeft = '8px';
-                        selector.style.alignItems = 'center';
-
-                        const p = document.createElement('p');
-                        p.style.margin = '0';
-                        p.textContent = filter.display;
-                        selector.appendChild(p);
-
-                        const select = document.createElement('select');
-                        select.id = "cf-"+key;
-                        select.classList.add(filter.class);
-                        select.classList.add('form-select');
-                        select.classList.add('w-auto');
-                        select.classList.add('category-filter');
-                        for (const [option_key, option] of Object.entries(filter.selector.options)) {
-                            const optionElement = document.createElement('option');
-                            optionElement.value = option_key;
-                            optionElement.textContent = option;
-                            select.appendChild(optionElement);
-                        }
-                        selector.appendChild(select);
-                        if(filter.session!=""){
-                            const sessionValue = sessionStorage.getItem(filter.session)??1;
-                            if (sessionValue) {
-                                select.value = sessionValue;
-                                filters[select.id] = sessionValue;
-                            }
-                            select.addEventListener('change', function () {
-                                sessionStorage.setItem(filter.session, this.value);
-                            });
-                        }
                         
-                        $("#"+options.id+"_filter").prepend(selector);
+                        if(filter.selector){
+                            const selector = document.createElement('div');
+                            selector.classList.add('filter');
+                            selector.style.display = 'flex';
+                            selector.style.flexDirection = 'row';
+                            selector.style.justifyContent = 'flex-end';
+                            selector.style.gap = '8px';
+                            selector.style.marginLeft = '8px';
+                            selector.style.alignItems = 'center';
+
+                            const p = document.createElement('p');
+                            p.style.margin = '0';
+                            p.textContent = filter.display;
+                            selector.appendChild(p);
+                            const select = document.createElement('select');
+                            select.id = "cf-"+key;
+                            select.classList.add(filter.class);
+                            select.classList.add('form-select');
+                            select.classList.add('w-auto');
+                            select.classList.add('category-filter');
+                            for (const [option_key, option] of Object.entries(filter.selector.options)) {
+                                const optionElement = document.createElement('option');
+                                optionElement.value = option_key;
+                                optionElement.textContent = option;
+                                select.appendChild(optionElement);
+                            }
+                            selector.appendChild(select);
+                            if(filter.session!=""){
+                                const sessionValue = sessionStorage.getItem(filter.session)??1;
+                                if (sessionValue) {
+                                    select.value = sessionValue;
+                                    filters[select.id] = sessionValue;
+                                }
+                                select.addEventListener('change', function () {
+                                    sessionStorage.setItem(filter.session, this.value);
+                                });
+                            }
+
+                            $("#"+options.id+"_wrapper .dt-layout-cell.dt-end").first().prepend(selector);
+                        }
+                        else{
+                            const filters_div = document.createElement('div');
+                            filters_div.classList.add('filter');
+                            filters_div.style.display = 'flex';
+                            filters_div.style.flexDirection = 'row';
+                            filters_div.style.justifyContent = 'flex-end';
+                            filters_div.style.gap = '8px';
+                            filters_div.style.marginLeft = '8px';
+                            filters_div.style.alignItems = 'center';
+                            filters_div.id = key;
+                            const p = document.createElement('p');
+                            p.style.margin = '0';
+                            p.textContent = filter.display;
+                            filters_div.appendChild(p);
+                            for(let f in filter.filters){
+                                let filter_button = filter.filters[f];
+                                const button = document.createElement('button');
+                                button.id = "f-"+key+"-"+f;
+                                button.classList.add('filter-button');
+                                button.classList.add('btn');
+                                button.classList.add('btn-outline-neutral-900');
+                                button.classList.add('no-hover');
+                                button.textContent = filter_button.display;
+                                filters_div.appendChild(button);
+                            }
+                            $("#"+options.id+"_wrapper .dt-layout-cell.dt-end").first().prepend(filters_div);
+                        }
                     }
-                    $("#"+options.id+"_filter").css("display", "flex").css("flex-direction", "row").css("gap", "6px");
+                    $("#"+options.id+"_wrapper .dt-layout-cell.dt-end").first().css("display", "flex").css("flex-direction", "row").css("justify-content", "flex-end").css("gap", "6px");
                     setTimeout(function() {
                         if(options.filters!=[]){
                             $('.filter-button').on('click', function () {
                                 const clickedButton = $(this);
-                                var is_on = clickedButton.hasClass("filter-on");
-                                $('.filter-button').removeClass('filter-on');
+                                var is_on = clickedButton.hasClass("active");
+                                $('.filter-button').removeClass('active');
                                 if(!is_on){
-                                    clickedButton.addClass("filter-on");
-                                    filters[this.parentElement.id] = this.id.substring(11);
+                                    clickedButton.addClass("active");
+                                    filters[this.parentElement.id] = this.id.substring(10);
                                 }
                                 else{
                                     delete filters[this.parentElement.id];
@@ -256,54 +294,70 @@
                 });
                 
                 table.delete_id = 0;
-                
-                table.on_delete = function(){
-                    
-                }
             }
             
             if(options.is_editable){
-                $table.on('click', '.edit-btn', function(event) {
+                $table.on('click', '.edit-btn', async function(event) {
                     cancer_edit();
                     this.parentElement.style.display = 'none';
                     this.parentElement.parentElement.children[1].style.display = 'flex';
                     this.parentElement.parentElement.children[1].style.justifyContent = 'left';
                     var row = table.row($(this).parents('tr'));
                     var initial_data = "id: '"+row.data().id+"',";
-                    for(var key in options.columns){
-                        var col = options.columns[key];
-                        if(col.editable){
-                            initial_data += key+": "+"'"+row.data()[key]+"',";
-                        }
+                    for(var key in options.form.fields){
+                        initial_data += key+": "+"'"+row.data()[key]+"',";
                     }
                     initial_data = initial_data.slice(0, -1);
-                    this.parentElement.parentElement.parentElement.setAttribute('x-data', '{ form: { '+initial_data+' },errors: {} }');
+                    var xdata = [];
+                    xdata.push('form: { '+initial_data+' },');
+                    xdata.push('errors: {},');
+                    xdata.push('init(){');
+                    for(var key_field in options.form.fields){
+                        var column = options.columns[key_field];
+                        if(column?.logic_modifier && column.logic_modifier.type == 'foreign_key'){
+                            xdata.push("$('#"+key_field+"').val(this.form."+key_field+").select2({theme: 'bootstrap-5',width: 'auto',allowClear: true,placeholder: 'Select'});");
+                            xdata.push("$('#"+key_field+"').on('change', () => {");
+                            xdata.push("this.form."+key_field+" = $('#"+key_field+"').val();");
+                            xdata.push("});");
+                        }
+                    }
+                    xdata.push('},');
+                    
                     this.parentElement.parentElement.parentElement.id = "editing";
                     var colnum = 0;
-                    var has_date = false;
-                    var has_selector = false;
-                    for(var key in options.form.fields){
-                        var field = options.form.fields[key];
+                    var changes = [];
+                    for(let key in options.columns){
                         var col = options.columns[key];
-                        
-                    }
-                    for(var key in options.columns){
-                        var col = options.columns[key];
-                        if(col.editable){
-                            var cell = row.node().getElementsByTagName('td')[colnum];
-                            
-                            var hidden = "<span style='display:none' class='edit-cancel-recover'>"+cell.innerHTML+"</span>";
-                            
+                        if(options.form.fields[key]){
+                            let cell = row.node().getElementsByTagName('td')[colnum];
+                            let field = options.form.fields[key];
+                            let hidden = "<span style='display:none' class='edit-cancel-recover'>"+cell.innerHTML+"</span>";
                             if(col.logic_modifier != null){
                                 switch(col.logic_modifier.type){
                                     case 'foreign_key':
-                                        hidden = hidden+'<select x-model="form.'+key+'" class="form-select db-select" id="'+key+'"><option disabled selected value>selec</option>';
-                                        for(var option in selectors[key]){
-                                            hidden += '<option value=' + option + '>' + selectors[key][option] + '</option>';
+                                        if(field.hot_reload!=""){
+                                            var data = await $.ajax({
+                                                url: field.hot_reload,
+                                                type: "GET",
+                                                dataType: "json",
+                                                data: {
+                                                    id: row.data().id
+                                                }
+                                            });
+                                            hidden = hidden+'<select x-model="form.'+key+'" class="form-select db-select" id="'+key+'"><option disabled selected value>selec</option>';
+                                            for(let option in data){
+                                                hidden += '<option value=' + data[option].id + '>' + data[option].value + '</option>';
+                                            }
+                                            hidden += '</select>';
                                         }
-                                        hidden += '</select>';
-                                        cell.innerHTML = hidden;
-                                        has_selector = true;
+                                        else{
+                                            hidden = hidden+'<select x-model="form.'+key+'" class="form-select db-select" id="'+key+'"><option disabled selected value>selec</option>';
+                                            for(var option in selectors[key]){
+                                                hidden += '<option value=' + option + '>' + selectors[key][option] + '</option>';
+                                            }
+                                            hidden += '</select>';
+                                        }
+                                        
                                         break;
                                     case 'options':
                                         hidden = hidden+'<select x-model="form.'+key+'" class="form-select" id="'+key+'">';
@@ -311,38 +365,45 @@
                                             hidden += '<option value=' + option + '>' + window[col.logic_modifier.options][option] + '</option>';
                                         }
                                         hidden += '</select>';
-                                        cell.innerHTML = hidden;
-                                        break;
-                                }
-                            }
-                            else if(field.modifier != null){
-                                switch(field.modifier){
-                                    case 'date':
-                                        cell.innerHTML = hidden+'<input x-model="form.'+key+'" id="'+key+'" type="date" class="form-control date-editor" >';
-                                        has_date = true;
-                                        break;
-                                    case 'number':
-                                        cell.innerHTML = hidden+'<input x-model="form.'+key+'" id="'+key+'" type="number" class="form-control" >';
+                                        
                                         break;
                                 }
                             }
                             else{
-                                //text input
-                                cell.innerHTML = hidden+'<input x-model="form.'+key+'" id="'+key+'" type="text" class="form-control" value="'+row.data()[key]+'" >';
+                                switch(field.type){
+                                    case 'date':
+                                        hidden = hidden+'<input x-model="form.'+key+'" id="'+key+'" type="date" class="form-control date-editor" >';
+                                        break;
+                                    case 'number':
+                                        hidden = hidden+'<input x-model="form.'+key+'" id="'+key+'" type="number" class="form-control" >';
+                                        break;
+                                    case 'tel':
+                                        hidden = hidden+'<input x-model="form.'+key+'" id="'+key+'" type="tel" class="form-control" oninput="console.log(this.value.replace(/\D/g, \'\'))" >';
+                                        break;
+                                    case 'email':
+                                        hidden = hidden+'<input x-model="form.'+key+'" id="'+key+'" type="text" class="form-control" oninput="this.value = this.value.toLowerCase()" >';
+                                        break;
+                                    
+                                    case 'text':
+                                        hidden = hidden+'<input x-model="form.'+key+'" id="'+key+'" type="text" class="form-control" >';
+                                        break;
+                                }
                             }
-                            cell.innerHTML += '<p class="form-error" x-text="errors[\''+key+'\']"></p>';
+                            
+                            hidden += '<p class="form-error" x-text="errors[\''+key+'\']"></p>';
+                            changes.push({key: colnum, value: hidden});
                         }
-                        
                         colnum+=1;
                     }
-                    if(has_date){
-                        //$('input.date-editor').bootstrapMaterialDatePicker({
-				        //	time: false        
-				        //});
+                    for(let i in changes){
+                        let change = changes[i];
+                        var cell = row.node().getElementsByTagName('td')[change.key];
+                        cell.innerHTML = change.value;
                     }
-                    if(has_selector){
-                        $('select.db-select').select2({theme: 'bootstrap4',allowClear: true,placeholder:"select"});
-                    }
+                    this.parentElement.parentElement.parentElement.setAttribute(
+                        'x-data',
+                        '{ ' + xdata.join(' ') + ' }'
+                    );
                 });
                 
                 $table.on('click', '.cancel-btn', function(event) {
@@ -367,6 +428,16 @@
                             }
                         },
                     });
+                });
+            }
+
+            if(options.view){
+                $('#'+options.id+' tbody').on('click', 'tr', function(event) {
+                    var data = table.row(this).data();
+                    window.location.href = 
+                        options.view.url+'?'+
+                        options.view.name+'='+
+                        data[options.view.param];
                 });
             }
         });

@@ -17,6 +17,7 @@ class ColorRegister extends BaseFormRequest
             table: 'inventory',
             fields: [
                 'color' => Selector::fromDB(
+                    id: 'color',
                     table: 'colors',
                     label_column: 'color',
                     placeholder: 'agregar color',

@@ -39,7 +39,7 @@
         </x-sharedutils::modal>
         @include('shared-utils::components.tables.localSmartTable', ['table' => $preview_table])
         <div id="pay-area">
-            @include('shared-utils::components.ajax-form', ['form' => $payment_form])
+            <x-smartForm :form="$payment_form"/>
             <p>Total: $<span id="total">0</span></p>
         </div>
         <button class="btn btn-success" id="save-PreviewSale" >Confirmar Compra</button>
@@ -49,12 +49,12 @@
     <script>
         function open_select_product() {
             openPopup('select-product-popup');
-            $('#{{ $select_table->id }}').refreshLayeredSmartTable();
+            $('#{{ $select_table->get_id() }}').refreshLayeredSmartTable();
             
         }
         $(document).on('selected-ProductSelect', function(e, data) {
             closePopup('select-product-popup');
-            $('#{{ $preview_table->id }}').addElementToTable({
+            $('#{{ $preview_table->get_id() }}').addElementToTable({
                 'product': data.labels[2].id,
                 'name': data.labels[1].name+' '+data.labels[2].color
             });
@@ -82,7 +82,7 @@
             $('#total').text(formatNumber(total));
         }
         
-        $('#{{ $preview_table->id }}').on('click', '.delete-btn', function(event) {
+        $('#{{ $preview_table->get_id() }}').on('click', '.delete-btn', function(event) {
             calc_total();
         });
 

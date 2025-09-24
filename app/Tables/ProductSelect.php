@@ -15,7 +15,6 @@ class ProductSelect extends LayeredTable
     public function __construct()
     {
         parent::__construct(
-            id: 'ProductSelect', 
             layers: [
                 new Layer(
                     getter: new ArrayGetter(
@@ -36,14 +35,7 @@ class ProductSelect extends LayeredTable
                             'name' => new Column(display: 'Producto')
                         ],
                         filters:[],
-                        backend_filters:[
-                            new BasicFilter(
-                                id : 'product',
-                                filter : function(Builder $query,array $data) {
-                                    $query->where('product','=',$data['product']);
-                                }
-                            )
-                        ]
+                        backend_filters:[]
                     ),
                     title: 'name',
                     parent: 'product'

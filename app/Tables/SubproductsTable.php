@@ -2,9 +2,8 @@
 
 namespace App\Tables;
 
-use Ro749\SharedUtils\Tables\StatisticTable;
-use Ro749\SharedUtils\Statistics\BaseStatistic;
-use Ro749\SharedUtils\Getters\StatisticsGetter;
+use Ro749\SharedUtils\Tables\BaseTableDefinition;
+use Ro749\SharedUtils\Getters\ArrayGetter;
 use Ro749\SharedUtils\Statistics\StatisticType;
 use Ro749\SharedUtils\Tables\Column;
 use Ro749\SharedUtils\Tables\Delete;
@@ -14,21 +13,51 @@ use Ro749\SharedUtils\FormRequests\Selector;
 use Ro749\SharedUtils\Filters\BackendFilters\BasicFilter;
 use \Illuminate\Database\Query\Builder; 
 use App\Forms\SubproductInventoryForm;
-class SubproductsTable extends StatisticTable
+use Ro749\SharedUtils\Statistics\Statistic;
+use Ro749\SharedUtils\Statistics\StatisticColumn;
+use Ro749\SharedUtils\Models\LogicModifiers\ForeignKey;
+class SubproductsTable extends BaseTableDefinition
 {
     public function __construct()
     {
         parent::__construct(
-            id: 'SubproductsTable', 
-            getter: new StatisticsGetter(
-                category_table: 'subproducts',
-                category_column: 'name',
-                data_table: 'inventory',
-                data_column: 'subproduct',
-                value_column: 'value',
-                type: StatisticType::TOTAL,
-                category_column_desc: new Column(display:"Productos"),
-                data_column_desc: new Column(display:"Cantidad"),
+            getter: new ArrayGetter(
+                table: 'subproducts',
+                statistics:[
+                    'stat'=> new Statistic(
+                        table: 'inventory',
+                        group_column: 'subproduct',
+                        columns: [
+                            'value'=> new StatisticColumn(
+                                type: StatisticType::SUM
+                            )
+                        ],
+
+                        filters:[
+                            'location' => new CategoryFilter(
+                                id: 'location',
+                                display: 'Ubicación',
+                                column: 'location',
+                                session: 'location',
+                                selector: Selector::fromDB(
+                                    id: 'location',
+                                    table: 'locations',
+                                    label_column: 'name',
+                                )
+                            ),
+                        ]
+                    )
+                ],
+                columns: [
+                    'name'=> new Column(display:"Producto"),
+                    'value'=>new Column(
+                        display: 'Cantidad',
+                        logic_modifier: new ForeignKey(
+                            table: 'stat',
+                            column: 'value'
+                        )
+                    )
+                ],
                 backend_filters: [
                     'product' => new BasicFilter(
                         id: 'product',
@@ -37,19 +66,7 @@ class SubproductsTable extends StatisticTable
                         }
                     ),
                 ],
-                filters:[
-                    'location' => new CategoryFilter(
-                        id: 'location',
-                        display: 'Ubicación',
-                        column: 'location',
-                        session: 'location',
-                        selector: Selector::fromDB(
-                            id: 'location',
-                            table: 'locations',
-                            label_column: 'name',
-                        )
-                    ),
-                ]
+                
             ),
             form: SubproductInventoryForm::instanciate(),
             view: new View('/inventory','id','subproduct'),

@@ -14,7 +14,6 @@ class PreviewSale extends LocalTable
 {
     public function __construct(){
         parent::__construct(
-            id: 'PreviewSale',
             parent_form: new PaymentForm(),
             parent_column: 'sale',
             owner: 'user',
